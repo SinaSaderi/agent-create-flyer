@@ -1,39 +1,42 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+import httpx
+from bs4 import BeautifulSoup
+from typing import Dict
 
+# Create a FastAPI app instance
 app = FastAPI()
 
-class NumberInput(BaseModel):
-    number: int
+# Define the URL to scrape
+MARKETWATCH_URL = "https://www.marketwatch.com/"
 
-@app.get("/factorial/{number}")
-async def factorial(number: int):
-    """
-    Calculate the factorial of a given number.
+@app.get("/market-status", response_model=Dict)
+async def get_market_status():
+    # Perform web scraping of the market status page
+    async with httpx.AsyncClient() as client:
+        response = await client.get(MARKETWATCH_URL)
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Could not retrieve market data")
     
-    Args:
-    - number (int): A non-negative integer whose factorial is to be calculated.
+    # Parse the HTML content
+    soup = BeautifulSoup(response.text, 'html.parser')
     
-    Raises:
-    - HTTPException: If the number is negative, raises a 400 status code error.
-    
-    Returns:
-    - dict: A dictionary containing the original number and its factorial.
-    """
-    if number < 0:
-        raise HTTPException(status_code=400, detail="Number must be non-negative.")
-    return {"number": number, "factorial": calculate_factorial(number)}
+    # Extract relevant data - This is highly dependent on the website's structure
+    try:
+        # Example of extracting Dow, Nasdaq, S&P data - adjust selectors based on actual DOM structure
+        dow = soup.select_one('.element--market-summary .cell--dow .quote .value').text
+        nasdaq = soup.select_one('.element--market-summary .cell--comp .quote .value').text
+        sp500 = soup.select_one('.element--market-summary .cell--spx .quote .value').text
+    except AttributeError as e:
+        raise HTTPException(status_code=500, detail="Error parsing market data")
 
-def calculate_factorial(n: int) -> int:
-    """
-    Recursively calculates the factorial of a non-negative integer n.
+    # Build a summarized data response
+    market_status = {
+        "Dow Jones": dow,
+        "NASDAQ": nasdaq,
+        "S&P 500": sp500,
+    }
 
-    Args:
-    - n (int): The non-negative integer to calculate the factorial of.
+    return market_status
 
-    Returns:
-    - int: The factorial of n.
-    """
-    if n == 0:
-        return 1
-    return n * calculate_factorial(n - 1)
+# Make sure to run this script with an ASGI server such as uvicorn
+# e.g., uvicorn script_name:app --reload
