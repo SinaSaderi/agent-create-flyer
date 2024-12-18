@@ -10,4 +10,3 @@ async def read_root():
     GET endpoint that returns a simple 'Hello World' message.
     """
     return {"message": "Hello World"}
-```
