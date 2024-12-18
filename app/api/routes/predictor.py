@@ -45,5 +45,5 @@ async def predict(data_input: MachineLearningDataInput):
     name="health:get-data",
 )
 async def health():
-    is_health = "flyer"
-    return HealthResponse(status=is_health)
+    is_health = True
+    return HealthResponse(validation=is_health)
