@@ -8,7 +8,7 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml ./
 
 # Install Poetry and dependencies
-RUN pip install --upgrade pip &&     pip install poetry &&     poetry config virtualenvs.create false && pip i&& pip install bs4
+RUN pip install --upgrade pip &&     pip install poetry &&     poetry config virtualenvs.create false && pip install httpx && pip install bs4
 
 # Install project dependencies
 ARG DEV=true
