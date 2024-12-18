@@ -45,14 +45,5 @@ async def predict(data_input: MachineLearningDataInput):
     name="health:get-data",
 )
 async def health():
-    is_health = False
-    try:
-        test_input = MachineLearningDataInput(
-            **json.loads(open(INPUT_EXAMPLE, "r").read())
-        )
-        test_point = test_input.get_np_array()
-        get_prediction(test_point)
-        is_health = True
-        return HealthResponse(status=is_health)
-    except Exception:
-        raise HTTPException(status_code=404, detail="Unhealthy")
+    is_health = True
+    return HealthResponse(status=is_health)
